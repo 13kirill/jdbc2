@@ -2,11 +2,9 @@ package ru.netology.jdbc2.repository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.io.BufferedReader;
@@ -18,12 +16,15 @@ import java.util.stream.Collectors;
 @Repository
 public class ShopRepository {
 
-    String getProductNameScript = read("script.sql");
 
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
-    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+    public ShopRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
 
-
+    String getProductNameScript = read("getProductNameScript.sql");
 
     private static String read(String scriptFileName) {
         try (InputStream is = new ClassPathResource(scriptFileName).getInputStream();
@@ -33,6 +34,7 @@ public class ShopRepository {
             throw new RuntimeException(e);
         }
     }
+
     public String getProductName(String name) {
         SqlParameterSource namedParameters = new MapSqlParameterSource().addValue("name", name);
         return namedParameterJdbcTemplate.queryForObject(getProductNameScript, namedParameters, String.class);
